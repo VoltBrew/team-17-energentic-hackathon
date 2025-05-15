@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trillectric P2P</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css"/>
+
+    <style>
+        body, html {
+            margin: 0;
+            border: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0A031C;
+        }
+
+        #map {
+            position: fixed;
+            z-index: 10;
+            width: 100%;
+            height: calc(100% - 90px);
+        }
+
+        #overlay {
+            position: fixed;
+            z-index: 20;
+            top: 0;
+            left: 0;
+            width: 370px;
+            height: 100%;
+            bottom: 0;
+            background: linear-gradient(90deg, #0a071f, #0d336300);
+        }
+
+        #logo {
+            position: fixed;
+            z-index: 30;
+            top: 40px;
+            left: 40px;
+            width: 327px;
+        }
+
+        #cards {
+            position: fixed;
+            z-index: 40;
+            top: 140px;
+            left: 40px;
+            width: 328px;
+            bottom: 5px;
+            padding: 30px 0 0;
+            margin: 0;
+            border-top: 1px solid #515151;
+        }
+
+        .card-element {
+            background-color: #050D2B;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+
+        }
+
+        .card-element h3 {
+            color: #FFFDFD;
+            font-size: 18px;
+            font-weight: 500;
+            margin: 0;
+            padding: 10px 20px;
+            background-color: #051550;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .card-element ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .card-element ul li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 20px;
+            color: #FFFDFD;
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .card-element ul li > div:first-child {
+            width: 70%;
+        }
+
+        .card-element ul li > div:last-child {
+            width: 30%;
+        }
+
+        .rounded-full {
+            background-color: green;
+            color: #FFFDFD;
+            padding: 5px 20px;
+            border-radius: 15px;
+            border: none;
+            font-size: 14px;
+            font-weight: 400;
+            display: inline-block;
+            margin-left: -20px;
+        }
+
+        .warning {
+            background-color: #EEA106;
+        }
+
+        .critical {
+            background-color: #F12424;
+        }
+
+        .normal {
+            background-color: #10B713;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0 15px;
+        }
+
+        .button {
+            color: #FFFDFD;
+            padding: 6px 30px;
+            border-radius: 9px;
+            font-size: 18px;
+            font-weight: 600;
+            display: inline-block;
+            border: 1px solid #2353FF;
+            background-color: transparent;
+        }
+
+        .button.active {
+            background-color: #2353FF;
+        }
+
+        .button:hover {
+            cursor: pointer;
+        }
+
+        .button:focus {
+            outline: none;
+        }
+
+        #graph {
+            position: fixed;
+            z-index: 30;
+            top: 40px;
+            left: 400px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: calc(100% - 420px);
+            gap: 10px;
+        }
+        #main {
+            position: fixed;
+            z-index: 30;
+            top: 330px;
+            height: calc(100% - 360px);
+            left: 400px;
+            width: calc(100% - 780px);
+            gap: 10px;
+            background-color: #050D2B;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid #0083EF;
+        }
+
+        .graph-container {
+            background-color: #050D2B;
+            width: 100%;
+            height: 100%;
+            display: block;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid #0083EF;
+        }
+
+        .graph-container h2 {
+            color: #FFFDFD;
+            font-size: 24px;
+            padding: 20px;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        #chart {
+            width: 100%;
+            height: 170px;
+            background: #050D2B;
+            border-radius: 16px;
+            padding: 10px;
+        }
+        .chart-container {
+            color: white;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+
+        .content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        #donutChart {
+            width: 150px;
+            height: 150px;
+            color: #fff;
+        }  #donutChart1 {
+            width: 150px;
+            height: 150px;
+            color: #fff;
+        }
+
+        #donutChart canvas {
+            color: #fff;
+        }
+
+        .summary {
+            font-size: 16px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #333;
+            padding: 10px 0;
+        }
+
+        .summary-row:first-child {
+            border-top: none;
+        }
+          .summary-row > span:last-child {
+              padding-left: 10px;
+        }
+
+
+        .chart-wrapper {
+            position: relative;
+        }
+        #barChart {
+            width: 100%;
+            height: 95px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px 50px;
+            font-size: 16px;
+            margin-top: 20px;
+            color: #fff;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .chat-container {
+            position: fixed;
+            bottom:30px;
+            right: 0;
+            width: 360px;
+            background-color: #0D1333;
+            border-radius: 40px;
+            padding: 20px 16px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .chat-header img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+
+        .chat-header h2 {
+            font-size: 18px;
+            margin: 0;
+            color: white;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #2c345d;
+            margin: 12px 0;
+        }
+
+        .message {
+            background-color: #0A1029;
+            padding: 16px;
+            border-radius: 16px;
+            max-width: 85%;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: white;
+        }
+
+        .bot {
+            align-self: flex-start;
+        }
+
+        .user {
+            align-self: flex-end;
+        }
+        .filter-bar {
+            background-color: #070E2D;
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .dropdown {
+            background-color: #2B64FF;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown::after {
+            content: "▼";
+            font-size: 10px;
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .pill.all { background-color: #1E56FF; }
+        .pill.substations { background-color: #F1C40F; }
+        .pill.feeders { background-color: #F012F0; }
+        .pill.households { background-color: #2ECC40; }
+        .pill.ders { background-color: #E91E63; }
+
+        .pill .icon {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="overlay"></div>
+<img src="VoltBrew.svg" alt="" id="logo"/>
+<div id="cards" style="overflow-y: auto">
+    <div class="button-container">
+        <button class="button active">Event Feed</button>
+        <button class="button ">Audit Trial</button>
+    </div>
+    <div class="card-element">
+        <h3>Central Feeder Hub</h3>
+        <div>
+            <ul>
+                <li>
+                    <div>Region</div>
+                    <div>Central</div>
+                </li>
+                <li>
+                    <div>Region</div>
+                    <div>
+                        <div class="rounded-full critical">Critical</div>
+                    </div>
+                </li>
+                <li>
+                    <div>Region</div>
+                    <div>Central</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-element">
+        <h3>Central Feeder Hub</h3>
+        <div>
+            <ul>
+                <li>
+                    <div>Region</div>
+                    <div>Central</div>
+                </li>
+                <li>
+                    <div>Region</div>
+                    <div>
+                        <div class="rounded-full normal">Normal</div>
+                    </div>
+                </li>
+                <li>
+                    <div>Region</div>
+                    <div>Central</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-element">
+        <h3>Central Feeder Hub</h3>
+        <div>
+            <ul>
+                <li>
+                    <div>Region</div>
+                    <div>Central</div>
+                </li>
+                <li>
+                    <div>Region</div>
+                    <div>
+                        <div class="rounded-full normal">Normal</div>
+                    </div>
+                </li>
+                <li>
+                    <div>Region</div>
+                    <div>Central</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-element">
+        <h3>Central Feeder Hub</h3>
+        <div>
+            <ul>
+                <li>
+                    <div>Region</div>
+                    <div>Central</div>
+                </li>
+                <li>
+                    <div>Region</div>
+                    <div>
+                        <div class="rounded-full warning">Warning</div>
+                    </div>
+                </li>
+                <li>
+                    <div>Region</div>
+                    <div>Central</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div id="graph">
+    <div class="graph-container">
+        <h2>DER Utilization</h2>
+        <div class="chart-container">
+            <div class="content">
+                <div class="chart-wrapper">
+                    <div id="donutChart"></div>
+                </div>
+                <div class="summary">
+                    <div class="summary-row"><span>Current</span><span>50%</span></div>
+                    <div class="summary-row"><span>Available</span><span>93%</span></div>
+                    <div class="summary-row"><span>Total</span><span>100%</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="graph-container">
+        <h2>System Load</h2>
+        <div class="chart-container">
+            <div class="content">
+                <div class="chart-wrapper">
+                    <div id="donutChart1"></div>
+                </div>
+                <div class="summary">
+                    <div class="summary-row"><span>Current</span><span>50%</span></div>
+                    <div class="summary-row"><span>Available</span><span>93%</span></div>
+                    <div class="summary-row"><span>Total</span><span>100%</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="graph-container">
+        <h2>Mitigation Events</h2>
+        <div id="barChart"></div>
+        <div class="stats">
+            <div class="stats-row"><span>Total</span><span>12</span></div>
+            <div class="stats-row"><span>Success</span><span>09</span></div>
+            <div class="stats-row"><span>Fallback</span><span>02</span></div>
+            <div class="stats-row"><span>Failed</span><span>02</span></div>
+        </div>
+    </div>
+
+</div>
+<div id="main">
+    <div class="filter-bar">
+        <div class="dropdown">Location</div>
+
+        <div class="pill all">All</div>
+
+        <div class="pill substations">
+            <span class="icon">🔋</span>
+            Substations
+        </div>
+
+        <div class="pill feeders">
+            <span class="icon">⚡</span>
+            Feeders
+        </div>
+
+        <div class="pill households">
+            <span class="icon">🏠</span>
+            Households
+        </div>
+
+        <div class="pill ders">
+            <span class="icon">💡</span>
+            DER’s
+        </div>
+    </div>
+    <div id="map">
+
+    </div>
+    <div class="chat-container">
+        <div class="chat-header">
+            <img src="/chat.svg" alt="Bot Icon">
+            <h2>Chat Bot</h2>
+        </div>
+        <div class="divider"></div>
+
+        <div class="message bot">
+            <strong>Hi Neha, 👋</strong><br><br>
+            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+        </div>
+
+        <div class="message user">
+            Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+        </div>
+    </div>
+</div>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD11z06PTr8lxZHpr0aeNgQG6foNB3_VyE" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        mounted() {
+            const chart = echarts.init(document.getElementById('barChart'));
+
+            const option = {
+                backgroundColor: '#0d1228',
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                grid: {
+                    left: '5%',
+                    right: '5%',
+                    bottom: '10%',
+                    top: '10%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                    axisLine: { show: false },
+                    axisTick: { show: false },
+                    axisLabel: {
+                        color: '#3370f4',
+                        fontWeight: 'bold',
+                        fontSize: 14
+                    }
+                },
+                yAxis: { show: false },
+                series: [
+                    {
+                        name: 'Failed',
+                        type: 'bar',
+                        stack: 'total',
+                        barWidth: 20,
+                        data: [1, 2, 1, 0, 2, 1, 1],
+                        itemStyle: { color: '#f1c40f' }
+                    },
+                    {
+                        name: 'Fallback',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [1, 1, 0, 1, 1, 1, 1],
+                        itemStyle: { color: '#e843e3' }
+                    },
+                    {
+                        name: 'Success',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [2, 2, 1, 2, 3, 2, 2],
+                        itemStyle: { color: '#00e7b6' }
+                    }
+                ]
+            };
+
+            chart.setOption(option);
+        }
+    });
+</script>
+<script>
+    new Vue({
+        el: '#app',
+        mounted() {
+            const chart = echarts.init(document.getElementById('donutChart'));
+
+            const option = {
+                series: [{
+                    name: 'DER Utilization',
+                    type: 'pie',
+                    radius: ['70%', '90%'],
+                    avoidLabelOverlap: false,
+                    label: {show: false},
+                    labelLine: {show: false},
+                    data: [
+                        {value: 50, name: 'Current', itemStyle: {color: '#00e7b6'}},
+                        {value: 7, name: 'Used', itemStyle: {color: '#f39c12'}},
+                        {value: 43, name: 'Remaining', itemStyle: {color: '#101c44'}}
+                    ]
+                }],
+                graphic: {
+                    elements: [{
+                        type: 'text',
+                        left: 'center',
+                        top: 'center',
+                        style: {
+                            text: '50%',
+                            fontSize: 24,
+                            fontWeight: 'bold',
+                            fill: '#fff'
+                        }
+                    }]
+                },
+                backgroundColor: '#0d1228'
+            };
+
+            chart.setOption(option);
+        }
+    });
+</script>
+<script>
+    new Vue({
+        el: '#app',
+        mounted() {
+            const chart = echarts.init(document.getElementById('donutChart1'));
+
+            const option = {
+                series: [{
+                    name: 'DER Utilization',
+                    type: 'pie',
+                    radius: ['70%', '90%'],
+                    avoidLabelOverlap: false,
+                    label: {show: false},
+                    labelLine: {show: false},
+                    data: [
+                        {value: 50, name: 'Current', itemStyle: {color: '#2353FF'}},
+                        {value: 7, name: 'Used', itemStyle: {color: '#0B1C57'}},
+                    ]
+                }],
+                graphic: {
+                    elements: [{
+                        type: 'text',
+                        left: 'center',
+                        top: 'center',
+                        style: {
+                            text: '50%',
+                            fontSize: 24,
+                            fontWeight: 'bold',
+                            fill: '#fff'
+                        }
+                    }]
+                },
+                backgroundColor: '#0d1228'
+            };
+
+            chart.setOption(option);
+        }
+    });
+</script>
+<script>
+    new Vue({
+        el: '#app',
+        mounted() {
+            const chart = echarts.init(document.getElementById('chart'));
+
+            const option = {
+                backgroundColor: '#111633',
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {type: 'shadow'}
+                },
+                legend: {
+                    data: ['Success', 'Fallback', 'Failed'],
+                    textStyle: {color: '#fff'}
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                    axisLine: {lineStyle: {color: '#ccc'}}
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: {lineStyle: {color: '#ccc'}},
+                    splitLine: {lineStyle: {color: '#333'}}
+                },
+                series: [
+                    {
+                        name: 'Success',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [4, 5, 1, 7, 3, 4, 4],
+                        itemStyle: {color: '#00D084'}
+                    },
+                    {
+                        name: 'Fallback',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [1, 2, 0, 3, 2, 2, 1],
+                        itemStyle: {color: '#FDC500'}
+                    },
+                    {
+                        name: 'Failed',
+                        type: 'bar',
+                        stack: 'total',
+                        data: [1, 2, 1, 2, 1, 1, 1],
+                        itemStyle: {color: '#D100C9'}
+                    }
+                ]
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+    });
+</script>
+<script>
+    const sites = [
+        {
+            "lat": 28.608078061161432,
+            "lng": 77.22419954031635
+        },
+        {
+            "lat": 28.658394116944283,
+            "lng": 77.21610202666476
+        },
+        {
+            "lat": 28.574200500498982,
+            "lng": 77.19910964795318
+        },
+        {
+            "lat": 28.600604155967122,
+            "lng": 77.25098364389443
+        },
+        {
+            "lat": 28.6305883764495,
+            "lng": 77.23442003524113
+        },
+        {
+            "lat": 28.604641852430532,
+            "lng": 77.21296324485985
+        },
+        {
+            "lat": 28.593971475659025,
+            "lng": 77.18354977138098
+        },
+        {
+            "lat": 28.598348937598622,
+            "lng": 77.22254566639175
+        },
+        {
+            "lat": 28.619765228453016,
+            "lng": 77.22450858313408
+        },
+        {
+            "lat": 28.600945011470394,
+            "lng": 77.26471881325527
+        },
+        {
+            "lat": 28.580710384675243,
+            "lng": 77.20481188611353
+        },
+        {
+            "lat": 28.630777604526862,
+            "lng": 77.21540151839437
+        },
+        {
+            "lat": 28.621766792740075,
+            "lng": 77.23609674190695
+        },
+        {
+            "lat": 28.648259220777152,
+            "lng": 77.19227406080815
+        },
+        {
+            "lat": 28.614834770824174,
+            "lng": 77.21341211253763
+        },
+        {
+            "lat": 28.621025985348496,
+            "lng": 77.1879944815516
+        },
+        {
+            "lat": 28.576694111062302,
+            "lng": 77.21618408663608
+        },
+        {
+            "lat": 28.618275654641277,
+            "lng": 77.21960870365774
+        },
+        {
+            "lat": 28.616659971981207,
+            "lng": 77.21857942442827
+        },
+        {
+            "lat": 28.598627170550213,
+            "lng": 77.2454332674287
+        },
+        {
+            "lat": 28.627922657551675,
+            "lng": 77.22145561331176
+        },
+        {
+            "lat": 28.609886657492233,
+            "lng": 77.22759814983505
+        },
+        {
+            "lat": 28.610268602014447,
+            "lng": 77.21927636289003
+        },
+        {
+            "lat": 28.616809480000466,
+            "lng": 77.2133615076851
+        },
+        {
+            "lat": 28.646383876444936,
+            "lng": 77.21713629254633
+        },
+        {
+            "lat": 28.62981476501205,
+            "lng": 77.22590298872028
+        },
+        {
+            "lat": 28.598832743667565,
+            "lng": 77.26677292555621
+        },
+        {
+            "lat": 28.63249447921446,
+            "lng": 77.2205930019167
+        },
+        {
+            "lat": 28.616467421982396,
+            "lng": 77.23462501781133
+        },
+        {
+            "lat": 28.627416269749983,
+            "lng": 77.20314235175728
+        },
+        {
+            "lat": 28.626456309528248,
+            "lng": 77.2387242950693
+        },
+        {
+            "lat": 28.606865538701058,
+            "lng": 77.21826568697338
+        },
+        {
+            "lat": 28.638740624283702,
+            "lng": 77.22856333955495
+        },
+        {
+            "lat": 28.619860154114384,
+            "lng": 77.23322699503333
+        },
+        {
+            "lat": 28.61195081992864,
+            "lng": 77.18728407655587
+        },
+        {
+            "lat": 28.599410567682778,
+            "lng": 77.17294259366045
+        },
+        {
+            "lat": 28.62386426707842,
+            "lng": 77.18461057604762
+        },
+        {
+            "lat": 28.606681999378363,
+            "lng": 77.26521837755539
+        },
+        {
+            "lat": 28.620864809399443,
+            "lng": 77.17218140053474
+        },
+        {
+            "lat": 28.598394201131693,
+            "lng": 77.23086147108262
+        },
+        {
+            "lat": 28.63255800919941,
+            "lng": 77.1868362876269
+        },
+        {
+            "lat": 28.61801487257485,
+            "lng": 77.23057854883518
+        },
+        {
+            "lat": 28.601729219620562,
+            "lng": 77.217135104409
+        },
+        {
+            "lat": 28.61840021742644,
+            "lng": 77.225965294992
+        },
+        {
+            "lat": 28.62890054857166,
+            "lng": 77.1995771143939
+        },
+        {
+            "lat": 28.599565941849125,
+            "lng": 77.23853520872666
+        },
+        {
+            "lat": 28.59149322731243,
+            "lng": 77.21961507263399
+        },
+        {
+            "lat": 28.65349292546534,
+            "lng": 77.21964979699055
+        },
+        {
+            "lat": 28.627069202810215,
+            "lng": 77.17749344007791
+        },
+        {
+            "lat": 28.619651056220192,
+            "lng": 77.21308794167422
+        },
+        {
+            "lat": 28.579740816374006,
+            "lng": 77.21710623450913
+        },
+        {
+            "lat": 28.603017114888736,
+            "lng": 77.22124869355939
+        },
+        {
+            "lat": 28.621104871528456,
+            "lng": 77.21745129447126
+        },
+        {
+            "lat": 28.60378191581705,
+            "lng": 77.21711159655909
+        },
+        {
+            "lat": 28.621301436044682,
+            "lng": 77.21429507073006
+        },
+        {
+            "lat": 28.645529654470327,
+            "lng": 77.25551430185789
+        },
+        {
+            "lat": 28.59598324968372,
+            "lng": 77.25131152570982
+        },
+        {
+            "lat": 28.613648590102006,
+            "lng": 77.24067048128416
+        },
+        {
+            "lat": 28.61603934395102,
+            "lng": 77.19640402857142
+        },
+        {
+            "lat": 28.59000600085161,
+            "lng": 77.20631232475941
+        },
+        {
+            "lat": 28.641075444599256,
+            "lng": 77.18831692128101
+        },
+        {
+            "lat": 28.610624050642006,
+            "lng": 77.24110003698596
+        },
+        {
+            "lat": 28.609018220943017,
+            "lng": 77.22837157477443
+        },
+        {
+            "lat": 28.6040275792842,
+            "lng": 77.25575598691432
+        },
+        {
+            "lat": 28.599302507120182,
+            "lng": 77.25561443223802
+        },
+        {
+            "lat": 28.615188211455465,
+            "lng": 77.21416511203054
+        },
+        {
+            "lat": 28.610547775129223,
+            "lng": 77.18997626626206
+        },
+        {
+            "lat": 28.58735246329316,
+            "lng": 77.24334589552282
+        },
+        {
+            "lat": 28.570835493416453,
+            "lng": 77.22097580309772
+        },
+        {
+            "lat": 28.619180660660618,
+            "lng": 77.22404638583353
+        },
+        {
+            "lat": 28.62042513098602,
+            "lng": 77.22130481277699
+        },
+        {
+            "lat": 28.590312781875625,
+            "lng": 77.25807218995915
+        },
+        {
+            "lat": 28.62046711141834,
+            "lng": 77.22301621109972
+        },
+        {
+            "lat": 28.610554371450405,
+            "lng": 77.19575623423249
+        },
+        {
+            "lat": 28.61834379592496,
+            "lng": 77.26243977488988
+        },
+        {
+            "lat": 28.64303622210146,
+            "lng": 77.20400918632555
+        },
+        {
+            "lat": 28.647574264907615,
+            "lng": 77.24133382552503
+        },
+        {
+            "lat": 28.594063252915056,
+            "lng": 77.20837074310295
+        },
+        {
+            "lat": 28.588230918521127,
+            "lng": 77.23658201514071
+        },
+        {
+            "lat": 28.646236157421388,
+            "lng": 77.21206905059915
+        },
+        {
+            "lat": 28.650260498044254,
+            "lng": 77.24524384105624
+        },
+        {
+            "lat": 28.590609252554373,
+            "lng": 77.24772839934404
+        },
+        {
+            "lat": 28.608010442091572,
+            "lng": 77.19638673051074
+        },
+        {
+            "lat": 28.614301920952027,
+            "lng": 77.22009383153448
+        },
+        {
+            "lat": 28.609950076494002,
+            "lng": 77.22027674468313
+        },
+        {
+            "lat": 28.61534216568431,
+            "lng": 77.24954478219367
+        },
+        {
+            "lat": 28.591878358142665,
+            "lng": 77.22894977393895
+        },
+        {
+            "lat": 28.58191872380735,
+            "lng": 77.23182369429954
+        },
+        {
+            "lat": 28.59765394564093,
+            "lng": 77.25177779603288
+        },
+        {
+            "lat": 28.58925744899666,
+            "lng": 77.24746326716338
+        },
+        {
+            "lat": 28.610690047723736,
+            "lng": 77.23790443930578
+        },
+        {
+            "lat": 28.62907549822807,
+            "lng": 77.23047809816553
+        },
+        {
+            "lat": 28.60936535057341,
+            "lng": 77.22043863442772
+        },
+        {
+            "lat": 28.580705982415815,
+            "lng": 77.23980224568061
+        },
+        {
+            "lat": 28.61735772133823,
+            "lng": 77.24906066930204
+        },
+        {
+            "lat": 28.62950776948142,
+            "lng": 77.23257106295053
+        },
+        {
+            "lat": 28.64157850606705,
+            "lng": 77.19231589895983
+        },
+        {
+            "lat": 28.612990834566443,
+            "lng": 77.21382697504569
+        },
+        {
+            "lat": 28.62668532036408,
+            "lng": 77.21869186399579
+        },
+        {
+            "lat": 28.61662629429143,
+            "lng": 77.19708892476099
+        }
+    ];
+    const sites80 = [
+        {
+            "lat": 28.616660775145554,
+            "lng": 77.22605510401559
+        },
+        {
+            "lat": 28.641812043620444,
+            "lng": 77.18055491383365
+        },
+        {
+            "lat": 28.595546134707764,
+            "lng": 77.22249295280652
+        },
+        {
+            "lat": 28.607304386433505,
+            "lng": 77.20754257873908
+        },
+        {
+            "lat": 28.62504199730537,
+            "lng": 77.21255771040971
+        },
+        {
+            "lat": 28.611533338456002,
+            "lng": 77.17886640631538
+        },
+        {
+            "lat": 28.573946803641416,
+            "lng": 77.24221583533229
+        },
+        {
+            "lat": 28.597768807904437,
+            "lng": 77.19192046485112
+        },
+        {
+            "lat": 28.605263855642814,
+            "lng": 77.24224128911935
+        },
+        {
+            "lat": 28.626211111837158,
+            "lng": 77.21554948407412
+        },
+        {
+            "lat": 28.61145132763219,
+            "lng": 77.18994122900844
+        },
+        {
+            "lat": 28.599103540693562,
+            "lng": 77.2110374462225
+        },
+        {
+            "lat": 28.60236225615877,
+            "lng": 77.24582647566427
+        },
+        {
+            "lat": 28.587038121126685,
+            "lng": 77.22649352119129
+        },
+        {
+            "lat": 28.594451861845414,
+            "lng": 77.18484394567035
+        },
+        {
+            "lat": 28.571295421906505,
+            "lng": 77.23433401862957
+        },
+        {
+            "lat": 28.604745686624316,
+            "lng": 77.2562542635218
+        },
+        {
+            "lat": 28.64323114993232,
+            "lng": 77.21305739726756
+        },
+        {
+            "lat": 28.596944885565502,
+            "lng": 77.25654959406467
+        },
+        {
+            "lat": 28.605832621137814,
+            "lng": 77.22336100496248
+        },
+        {
+            "lat": 28.61572196808358,
+            "lng": 77.21247066787221
+        },
+        {
+            "lat": 28.639652600626388,
+            "lng": 77.25740807464922
+        },
+        {
+            "lat": 28.614063372745562,
+            "lng": 77.21540181633699
+        },
+        {
+            "lat": 28.616003388754475,
+            "lng": 77.19617834194226
+        },
+        {
+            "lat": 28.637510221067433,
+            "lng": 77.25254944886069
+        },
+        {
+            "lat": 28.62075977035917,
+            "lng": 77.1808264576539
+        },
+        {
+            "lat": 28.616368126646936,
+            "lng": 77.24733315814056
+        },
+        {
+            "lat": 28.61969241836939,
+            "lng": 77.1830182278384
+        },
+        {
+            "lat": 28.637675067732186,
+            "lng": 77.23402622563202
+        },
+        {
+            "lat": 28.653867890300283,
+            "lng": 77.23800708483388
+        },
+        {
+            "lat": 28.604597599829923,
+            "lng": 77.1963757301041
+        },
+        {
+            "lat": 28.635716629096173,
+            "lng": 77.19487210186746
+        },
+        {
+            "lat": 28.595678044875708,
+            "lng": 77.19958986058536
+        },
+        {
+            "lat": 28.586741960927377,
+            "lng": 77.1931367895761
+        },
+        {
+            "lat": 28.603585975094674,
+            "lng": 77.21261809912595
+        },
+        {
+            "lat": 28.62538390297935,
+            "lng": 77.20369125725315
+        },
+        {
+            "lat": 28.61589441367151,
+            "lng": 77.25022759818114
+        },
+        {
+            "lat": 28.61882233538383,
+            "lng": 77.22963516086891
+        },
+        {
+            "lat": 28.5962746774071,
+            "lng": 77.22066886295644
+        },
+        {
+            "lat": 28.615503286665653,
+            "lng": 77.21795651901664
+        },
+        {
+            "lat": 28.586511774131488,
+            "lng": 77.20088432611753
+        },
+        {
+            "lat": 28.60748749931263,
+            "lng": 77.20293240945321
+        },
+        {
+            "lat": 28.620759815237268,
+            "lng": 77.20261381262551
+        },
+        {
+            "lat": 28.597801006963333,
+            "lng": 77.23354433753839
+        },
+        {
+            "lat": 28.622437861071433,
+            "lng": 77.23397886484297
+        },
+        {
+            "lat": 28.61837816542945,
+            "lng": 77.2352089290457
+        },
+        {
+            "lat": 28.592310955956435,
+            "lng": 77.19385961934562
+        },
+        {
+            "lat": 28.61430478196387,
+            "lng": 77.20554920622196
+        },
+        {
+            "lat": 28.627525582939832,
+            "lng": 77.25164930380163
+        },
+        {
+            "lat": 28.628559445207625,
+            "lng": 77.22951152158264
+        },
+        {
+            "lat": 28.605610752567124,
+            "lng": 77.20084325254751
+        },
+        {
+            "lat": 28.629759845886372,
+            "lng": 77.21259467094501
+        },
+        {
+            "lat": 28.590970962476216,
+            "lng": 77.17672749490409
+        },
+        {
+            "lat": 28.60051132253975,
+            "lng": 77.1931986416957
+        },
+        {
+            "lat": 28.578036074625356,
+            "lng": 77.20969736388311
+        },
+        {
+            "lat": 28.60249247468696,
+            "lng": 77.22017831066758
+        },
+        {
+            "lat": 28.59915926257224,
+            "lng": 77.26828415898383
+        },
+        {
+            "lat": 28.631836333294885,
+            "lng": 77.23993083808139
+        },
+        {
+            "lat": 28.57898630300208,
+            "lng": 77.22356219879543
+        },
+        {
+            "lat": 28.655371221446522,
+            "lng": 77.23653920686175
+        },
+        {
+            "lat": 28.614347802956406,
+            "lng": 77.21482581081499
+        },
+        {
+            "lat": 28.631085762890024,
+            "lng": 77.26473987523245
+        },
+        {
+            "lat": 28.600595255425862,
+            "lng": 77.24325807297421
+        },
+        {
+            "lat": 28.631551415875453,
+            "lng": 77.22649323182254
+        },
+        {
+            "lat": 28.608955473217648,
+            "lng": 77.24881491560517
+        },
+        {
+            "lat": 28.604215976020374,
+            "lng": 77.19743413069686
+        },
+        {
+            "lat": 28.624107512734334,
+            "lng": 77.23403408296093
+        },
+        {
+            "lat": 28.582737766243245,
+            "lng": 77.22574219238503
+        },
+        {
+            "lat": 28.65470552068061,
+            "lng": 77.21200384318219
+        },
+        {
+            "lat": 28.593528387051116,
+            "lng": 77.2108560039903
+        },
+        {
+            "lat": 28.58685458022762,
+            "lng": 77.25184767003101
+        },
+        {
+            "lat": 28.595278887143632,
+            "lng": 77.22698573681903
+        },
+        {
+            "lat": 28.629014428463435,
+            "lng": 77.20996555610691
+        },
+        {
+            "lat": 28.60580667652637,
+            "lng": 77.25362920055991
+        },
+        {
+            "lat": 28.637457807294883,
+            "lng": 77.2041560049508
+        },
+        {
+            "lat": 28.62805557581811,
+            "lng": 77.21025979344768
+        },
+        {
+            "lat": 28.577090165975655,
+            "lng": 77.2235973968369
+        },
+        {
+            "lat": 28.64523249000328,
+            "lng": 77.23269300376059
+        },
+        {
+            "lat": 28.61374221400467,
+            "lng": 77.21090330777731
+        },
+        {
+            "lat": 28.627880106395743,
+            "lng": 77.19804042914019
+        }
+    ];
+    let gmap;
+
+    // type of sites
+    // meter ev charger solar
+    sites80.forEach((s, idx) => {
+        s.type = ['EV', 'SOLAR', 'METER'][idx % 3];
+        if (idx === 47) s.type = 'GRID';
+    });
+
+    function initMap() {
+        // Specify the location (latitude and longitude)
+        const location = {lat: 28.6139, lng: 77.2090};
+        const CENTER = {lat: 28.6139, lng: 77.2200};
+
+        // Define map styles for custom colors
+        const mapStyles = [
+            {
+                "elementType": "geometry",
+                "stylers": [
+                    {"color": "#120c35"}
+                ]
+            },
+            {
+                "elementType": "labels.text.fill",
+                "stylers": [
+                    {"color": "#ffffff"}
+                ]
+            },
+            {
+                "elementType": "labels.text.stroke",
+                "stylers": [
+                    {"color": "#000", "visibility": "off"}
+                ]
+            },
+            {
+                "featureType": "water",
+                "stylers": [
+                    {"color": "#1774dd"}
+                ]
+            },
+            {
+                "featureType": "road",
+                "elementType": "geometry.fill",
+                "stylers": [
+                    {"color": "#352f59"} // Roads color
+                ]
+            },
+            {
+                "featureType": "road.highway",
+                "elementType": "geometry.fill",
+                "stylers": [
+                    {"color": "#21265e"} // Highway color
+                ]
+            },
+            // {
+            //     "featureType": "park",
+            //     "elementType": "geometry.fill",
+            //     "stylers": [
+            //         { "color": "#1a3c00" } // Parks and green zone fill
+            //     ]
+            // },
+            // {
+            //     "featureType": "landscape.man_made",
+            //     "elementType": "geometry.fill",
+            //     "stylers": [
+            //         { "color": "#261f67" } // Man-made constructions color
+            //     ]
+            // },
+            {
+                "featureType": "administrative.land_parcel",
+                "elementType": "geometry.stroke",
+                "stylers": [
+                    {"color": "#cd9a58"} // Parcel lot boundaries stroke
+                ]
+            },
+            {
+                "featureType": "all",
+                "elementType": "labels",
+                "stylers": [
+                    {"visibility": "off"} // Turn off all labels by default
+                ]
+            },
+            {
+                "featureType": "road",
+                "elementType": "labels",
+                "stylers": [
+                    {"visibility": "off"} // Turn on road labels
+                ]
+            },
+            {
+                "featureType": "poi",
+                "elementType": "labels.icon",
+                "stylers": [
+                    {"visibility": "off"} // Show important points of interest icons
+                ]
+            },
+            {
+                "featureType": "administrative",
+                "elementType": "labels.text",
+                "stylers": [
+                    {"visibility": "off"} // Turn off administrative labels
+                ]
+            }
+        ];
+
+        function generateRandomPoints(center, numPoints, radius) {
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const angle = Math.random() * Math.PI * 2; // Random angle in radians
+                const distance = Math.random() * radius; // Random distance within the radius
+
+                // Convert distance from km to degrees
+                const latOffset = distance / 111; // 1 degree latitude is ~111 km
+                const lngOffset = distance / (111 * Math.cos(center.lat * (Math.PI / 180)));
+
+                // Generate new lat/lng
+                const lat = center.lat + latOffset * Math.sin(angle);
+                const lng = center.lng + lngOffset * Math.cos(angle);
+
+                points.push({lat, lng});
+            }
+            console.log(points)
+            return points;
+        }
+
+        // Create the Google Map
+        const map = new google.maps.Map(document.getElementById("map"), {
+            center: location,
+            zoom: 14,
+            disableDefaultUI: true, // Hides all default controls
+            mapTypeControl: false,
+            styles: mapStyles // Apply custom styles
+        });
+
+
+        // Add markers for each point with a custom icon
+        const imap = {
+            SOLAR: "solarc.svg",
+            EV: "evb.svg",
+            METER: "metb.svg",
+            GRID: "grid.png"
+        };
+        sites80.forEach((point, index) => {
+            point.idx = index;
+            point.marker = new google.maps.Marker({
+                position: point,
+                map: map,
+                title: `${point.type} ${index + 1}`,
+                // animation: google.maps.Animation.DROP,
+                icon: {
+                    anchor: new google.maps.Point(15, 15),
+                    url: imap[point.type], // Custom marker icon
+                    scaledSize: new google.maps.Size(point.type === 'GRID' ? 70 : 30, point.type === 'GRID' ? 70 : 30), // Optional: Resize the icon
+                },
+            });
+        });
+
+        gmap = map;
+
+        setTimeout(() => {
+            // showTradeRoute(sites80[34], sites80[17], map)
+            // tLog('Kushal Likhi', 'Pulse EV', 12, 3, '06/12/2025', '12:00' + '-' + '13:00', 'CLAIMED', getRandomDarkColor(), getRandomDarkColor());
+            // tLog('Kushal Likhi', 'Dev', 12, 3, '06/12/2025', '12:00' + '-' + '13:00', 'CLAIMED', getRandomDarkColor(), getRandomDarkColor());
+            // tLog('Kushal Likhi', 'BSES Utility', 12, 3, '06/12/2025', '12:00' + '-' + '13:00', 'CLAIMED', getRandomDarkColor(), getRandomDarkColor());
+        }, 3000);
+        // setTimeout(() => {
+        //     showTradeRoute(sites80[30], sites80[17], map)
+        // }, 2000);
+        // setTimeout(() => {
+        //     showTradeRoute(sites80[30], sites80[47], map)
+        // }, 2500);
+        // setTimeout(() => {
+        //     showTradeRoute(sites80[29], sites80[40], map)
+        // }, 3000);
+    }
+
+    const colors = ["#017557", "#01a67d", "#01bf90", "#00f2b2"];
+    const gcolors = ["#5d7032", "#a4c359", "#c1e371", "#d2fb71"];
+    const activePoints = {};
+
+    function showTradeRoute(start, end, map, grid) {
+        sites80.forEach(s => {
+            if (activePoints[s.idx]) return;
+            if (s.type === 'GRID') return;
+            s.marker.setOpacity(.5);
+            s.marker.setAnimation(null);
+            s.marker.setIcon({
+                anchor: new google.maps.Point(15, 15),
+                url: s.marker.getIcon().url, // Use the same icon
+                scaledSize: new google.maps.Size(30, 30), // New enlarged size
+            });
+        })
+        start.marker.setOpacity(1);
+        start.marker.setIcon({
+            anchor: new google.maps.Point(25, 25),
+            url: start.marker.getIcon().url, // Use the same icon
+            scaledSize: new google.maps.Size(start.type === 'GRID' ? 70 : 50, start.type === 'GRID' ? 70 : 50), // New enlarged size
+        });
+
+        end.marker.setOpacity(1);
+        end.marker.setIcon({
+            anchor: new google.maps.Point(25, 25),
+            url: end.marker.getIcon().url, // Use the same icon
+            scaledSize: new google.maps.Size(end.type === 'GRID' ? 70 : 50, end.type === 'GRID' ? 70 : 50), // New enlarged size
+        });
+        activePoints[start.idx] = true;
+        activePoints[end.idx] = true;
+
+
+        // Create a DirectionsService instance
+        const directionsService = new google.maps.DirectionsService();
+
+        // Request directions from start to end
+        directionsService.route(
+            {
+                origin: start,
+                destination: end,
+                travelMode: google.maps.TravelMode.DRIVING,
+            },
+            function (response, status) {
+                if (status === google.maps.DirectionsStatus.OK) {
+                    // Extract the route's path
+                    const routePath = response.routes[0].overview_path;
+
+                    // Start the animation
+                    animateRoute(map, routePath, (lines) => {
+                        end.marker.setAnimation(google.maps.Animation.BOUNCE);
+                        // timeout to close
+                        setTimeout(() => {
+                            activePoints[start.idx] = false;
+                            activePoints[end.idx] = false;
+                            start.marker.setOpacity(.5);
+                            start.marker.setAnimation(null);
+                            start.marker.setIcon({
+                                anchor: new google.maps.Point(15, 15),
+                                url: start.marker.getIcon().url, // Use the same icon
+                                scaledSize: new google.maps.Size(start.type === 'GRID' ? 70 : 30, start.type === 'GRID' ? 70 : 30), // New enlarged size
+                            });
+                            end.marker.setOpacity(.5);
+                            end.marker.setAnimation(null);
+                            end.marker.setIcon({
+                                anchor: new google.maps.Point(15, 15),
+                                url: end.marker.getIcon().url, // Use the same icon
+                                scaledSize: new google.maps.Size(end.type === 'GRID' ? 70 : 30, end.type === 'GRID' ? 70 : 30), // New enlarged size
+                            });
+                            lines.forEach(l => l.setVisible(false));
+                            let hasActive = false;
+                            let keys = Object.keys(activePoints);
+                            for (let idx = 0; idx < activePoints.length; idx++) {
+                                if (activePoints[keys[idx]]) {
+                                    hasActive = true;
+                                    break;
+                                }
+                            }
+                            if (!hasActive) {
+                                sites80.forEach(s => {
+                                    if (activePoints[s.idx]) return;
+                                    if (s.type === 'GRID') return;
+
+                                    s.marker.setOpacity(1);
+                                    s.marker.setAnimation(null);
+                                    s.marker.setIcon({
+                                        anchor: new google.maps.Point(15, 15),
+                                        url: s.marker.getIcon().url, // Use the same icon
+                                        scaledSize: new google.maps.Size(30, 30), // New enlarged size
+                                    });
+                                })
+                            }
+                        }, 20000); // close
+                    }, grid);
+                } else {
+                    console.error("Directions request failed:", status);
+                }
+            }
+        );
+    }
+
+    // Function to animate the route
+    function animateRoute(map, routePath, cb, grid) {
+        const maxTime = 500;
+        const minDelay = 10, maxDelay = 100;
+        let stepIndex = 0; // Current step in the animation
+        const totalSteps = routePath.length;
+        const reducer = (maxDelay - minDelay) / totalSteps;
+        let totalTime = 0;
+        for (let sdx = 0; sdx < totalSteps; sdx++) {
+            totalTime += (maxDelay - (sdx * reducer));
+        }
+        const factor = maxTime / totalTime;
+        let stepIndexPercent = 0;
+
+
+        const outerPolyline = new google.maps.Polyline({
+            path: routePath,
+            strokeColor: "#9a9a9a", // White for border/glow
+            strokeOpacity: 0.3,     // Semi-transparent for glow effect
+            strokeWeight: 12,       // Thicker than the main line
+            map: map,
+        });
+        const polyline = new google.maps.Polyline({
+            path: [],
+            strokeColor: grid ? gcolors[0] : colors[0], // Initial color
+            strokeOpacity: 1,
+            strokeWeight: 4,
+            map: map,
+        });
+
+        // Function to add one segment to the polyline
+        function addSegment() {
+            if (stepIndex < routePath.length) {
+                // Add the next route point to the polyline path
+                polyline.getPath().push(routePath[stepIndex]);
+                stepIndex++;
+                stepIndexPercent = (stepIndex / totalSteps) * 100;
+
+                // Change the polyline color dynamically
+                polyline.setOptions({
+                    strokeColor: grid ? gcolors[stepIndexPercent < 25 ? 0 : stepIndexPercent < 50 ? 1 : stepIndexPercent < 75 ? 2 : 3] : colors[stepIndexPercent < 25 ? 0 : stepIndexPercent < 50 ? 1 : stepIndexPercent < 75 ? 2 : 3], // Cycle through colors
+                });
+
+                // Continue the animation
+                setTimeout(addSegment, (maxDelay - (stepIndex * reducer)) * factor); // Add the next segment after a delay (100ms)
+            } else {
+                cb([outerPolyline, polyline]);
+            }
+        }
+
+        addSegment(); // Start the animation
+    }
+
+    // Load the map when the window loads
+    window.onload = initMap;
+</script>
+<script>
+    // new Vue({
+    //     el: '#app',
+    //     data: {
+    //         transactions: [
+    //             {}
+    //         ]
+    //     }
+    // });
+
+
+    const intvls = {};
+
+    // function sLog(id, triggerId, hero, log, color, cls) {
+    //     const el = document.getElementById(id);
+    //     el.innerHTML += `<span><span style="color: ${color};font-weight: bold">[${hero}]</span> ${log}</span><br/>`;
+    //     el.scrollTop = el.scrollHeight;
+    //     clearTimeout(intvls[triggerId]);
+    //     document.getElementById(triggerId).classList.add(cls ? cls : 'boximate');
+    //     intvls[triggerId] = setTimeout(() => document.getElementById(triggerId).classList.remove(cls ? cls : 'boximate'), 1000);
+    // }
+
+    const allocations = {};
+
+    function tLog(si, bi, p, units, date, time, status, b1, b2) {
+
+        if (si.toString().search(/utility/i) > -1 || bi.toString().search(/utility/i) > -1) {
+            let un = sites80.find(s => s.type === 'GRID');
+            let sellers = [];
+            let c = ~~(Math.random() * 10);
+            for (let idx = 0; idx < c; idx++) {
+                let idx = sites80.filter(s => s.type === 'SOLAR' || s.type === 'EV').map(s => s.idx).sort(() => ~~(Math.random() * 1000) - ~~(Math.random() * 1000)).shift();
+                sellers.push(sites80[idx]);
+            }
+            sellers.forEach(s => {
+                showTradeRoute(s, un, gmap, true);
+                let bna, sna;
+                if (si.toString().search(/utility/i) > -1) {
+                    bna = si;
+                    sna = generateIndianName();
+                } else {
+                    bna = bi;
+                    sna = generateIndianName();
+                }
+                addCard(sna, bna, ~~(Math.random() * 20), 4 + ~~(Math.random() * 5), status, date, time, s, un);
+            });
+
+        } else {
+
+            // find seller node if not allocated yet
+            let bn, sn;
+            if (allocations[si]) {
+                sn = allocations[si];
+            } else {
+                let idx = sites80.filter(s => s.type === 'SOLAR').map(s => s.idx).sort(() => ~~(Math.random() * 1000) - ~~(Math.random() * 1000)).shift();
+                sn = sites80[idx];
+                allocations[si] = sn;
+            }
+            if (allocations[bi]) {
+                bn = allocations[bi];
+            } else {
+                let type = bi.toString().search(/EV/) > -1 ? 'EV' : 'METER';
+                let idx = sites80.filter(s => s.type === type).map(s => s.idx).sort(() => ~~(Math.random() * 1000) - ~~(Math.random() * 1000)).shift();
+                bn = sites80[idx];
+                allocations[bi] = bn;
+            }
+
+            showTradeRoute(sn, bn, gmap);
+            if (si.toString().toLowerCase() === 'dev') si = generateIndianName();
+            if (bi.toString().toLowerCase() === 'dev') bi = generateIndianName();
+            addCard(si, bi, units, p, status, date, time, sn, bn);
+        }
+
+    }
+
+    function addCard(si, bi, units, p, status, date, time, sn, bn) {
+        document.getElementById('cards').innerHTML += `
+        <div style="width: 100%;height: 150px">
+        <div style="width: 100%;position: relative">
+            <img src="/light.svg" style="width: 100%;position: absolute;top:0;left: 0;z-index: 100" alt="">
+            <img src="/purple-icon.svg" style="position: absolute;top: 9px;left: 20px;z-index: 110;height: 34px;${sn.type === 'EV' ? '' : 'display: none;'}" alt="">
+            <img src="/pink-icon.svg" style="position: absolute;top: 9px;left: 222px;z-index: 110;height: 34px;${bn.type === 'METER' ? '' : 'display: none;'}" alt="">
+            <img src="/yellow-icon.svg" style="background: #171049;position: absolute;top: 9px;left: 222px;z-index: 110;height: 34px;${bn.type === 'GRID' ? '' : 'display: none;'}" alt="">
+            <div style="z-index: 110;position: absolute;top: 14px;left: 64px;color: white;font-size: 1rem;">${si}
+            </div>
+            <div style="z-index: 110;position: absolute;top: 14px;left: 270px;color: white;font-size: 1rem;">${bi}
+            </div>
+            <div style="z-index: 110;position: absolute;top: 50px;left: 102px;color: white;font-size: .7rem;font-weight: 300;">
+                ${units} KWH
+            </div>
+            <div style="z-index: 110;position: absolute;top: 66px;left: 102px;color: white;font-size: .7rem;font-weight: 300;">
+                CA${~~(Math.random() * 100000)}
+            </div>
+            <div style="z-index: 110;position: absolute;top: 84px;left: 102px;color: white;font-size: .7rem;font-weight: 300;">
+                ₹${p} per unit
+            </div>
+
+            <div style="z-index: 110;position: absolute;top: 50px;left: 308px;color: white;font-size: .7rem;font-weight: 300;">
+                ${units} KWH
+            </div>
+            <div style="z-index: 110;position: absolute;top: 66px;left: 308px;color: white;font-size: .7rem;font-weight: 300;">
+                CA${~~(Math.random() * 100000)}
+            </div>
+            <div style="z-index: 110;position: absolute;top: 84px;left: 308px;color: white;font-size: .7rem;font-weight: 300;">
+                ₹${p} per unit
+            </div>
+
+            <div style="z-index: 110;position: absolute;top: 84px;left: 308px;color: white;font-size: .7rem;font-weight: 300;">
+                ₹${p} per unit
+            </div>
+
+            <div style="z-index: 110;position: absolute;top: 118px;left: 76px;color: white;font-size: 1rem;font-weight: bold;">
+                ${units} @ ₹${p}
+            </div>
+            <div style="z-index: 110;position: absolute;top: 123px;left: 158px;color: white;font-size: .6rem;font-weight: 300;">
+                ${status} | ${date}
+            </div>
+            <div style="z-index: 110;position: absolute;top: 124px;left: 292px;color: white;font-size: .55rem;font-weight: 300;">
+                ${time}
+            </div>
+        </div>
+</div>
+`;
+        const te = document.getElementById('cards');
+        te.scrollTop = te.scrollHeight;
+    }
+
+
+    function getRandomDarkColor() {
+        const colors = [
+            '#550000', '#003300', '#330033', '#000055', '#550055',
+            '#005555', '#555500', '#333333', '#2D2D2D', '#0A0A0A'
+        ];
+
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function timestampToHHMM(timestamp) {
+        const ISTOffset = 5.5 * 60 * 60 * 1000; // IST is UTC + 5:30
+        const date = new Date(parseInt(timestamp, 10) + ISTOffset);
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
+
+    function getRandomPrice() {
+        const min = 4.0;
+        const max = 7.0;
+        const randomNum = (Math.random() * (max - min) + min).toFixed(1);
+        return parseFloat(randomNum);
+    }
+
+
+    socket.on('trade', (msg) => {
+        console.log('TRADE-------------', msg);
+        try {
+            if (msg.type === 'GE') {
+                // buyer is cb
+                tLog(msg.si, msg.bi, msg.amount, msg.actualTraded, '19/02/2025', timestampToHHMM(msg.startDate) + '-' + timestampToHHMM(msg.endTDate), msg.status, getRandomDarkColor(), getRandomDarkColor());
+            } else if (msg.type === 'SELL') {
+                // buyer is cb
+                tLog(msg._user.name, msg._createdBy.name, msg.amount, msg.actualTraded, '19/02/2025', timestampToHHMM(msg.startDate) + '-' + timestampToHHMM(msg.endTDate), msg.status, getRandomDarkColor(), getRandomDarkColor());
+            } else {
+                // seller is cb
+                tLog(msg._createdBy.name, msg._user.name, msg.amount, msg.actualTraded, '19/02/2025', timestampToHHMM(msg.startDate) + '-' + timestampToHHMM(msg.endTDate), msg.status, getRandomDarkColor(), getRandomDarkColor());
+            }
+        } catch (c) {
+            console.log(c);
+        }
+        // const item = document.createElement('li');
+        // item.textContent = msg;
+        // messages.appendChild(item);
+        // window.scrollTo(0, document.body.scrollHeight);
+    });
+
+    function generateIndianName() {
+        const firstNames = [
+            "Aarav", "Vihaan", "Aditya", "Raj", "Rohan", "Aryan", "Karan", "Amit", "Siddharth", "Manish",
+            "Neha", "Priya", "Anjali", "Sanya", "Kavya", "Divya", "Ritika", "Aisha", "Simran", "Pooja"
+        ];
+
+        const lastNames = [
+            "Sharma", "Verma", "Patel", "Singh", "Chopra", "Reddy", "Nair", "Bose", "Iyer", "Joshi",
+            "Gupta", "Thakur", "Choudhary", "Desai", "Mehta", "Das", "Kapoor", "Malhotra", "Kumar", "Yadav"
+        ];
+
+        // Generate a random full name
+        const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+
+        return `${randomFirstName} ${randomLastName}`;
+    }
+
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
