@@ -1,0 +1,48 @@
+#################################
+# CODALIEN TECHNOLOGIES
+#################################
+# GIT IGNORE for master directory.
+# NOTE:
+# Refer sub gitignore files for
+# each sub directory if applicable
+#################################
+
+
+###############################################
+# IDE FILES
+###############################################
+*.ipr
+*.iml
+.idea
+
+
+###############################################
+# Node JS
+###############################################
+node-modules
+node_modules
+npm-debug.log
+
+
+###############################################
+# OS Files
+###############################################
+.DS_Store
+
+###############################################
+# TEMP FILES
+###############################################
+temp
+infra
+
+###############################################
+# WORKSPACE FILES
+###############################################
+service-apis/workspace
+service-apis/workspace/*/**
+!service-apis/workspace/.gitkeep
+workspace/*/**
+!workspace/.gitkeep
+package-lock.json
+./service-apis/package-lock.json
+.env
