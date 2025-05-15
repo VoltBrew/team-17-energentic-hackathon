@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trillectric P2P</title>
+    <title>VoltBrew P2P</title>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
@@ -343,24 +343,6 @@
             align-items: center;
         }
 
-        .dropdown {
-            background-color: #2B64FF;
-            color: white;
-            padding: 14px 20px;
-            border-radius: 12px;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .dropdown::after {
-            content: "▼";
-            font-size: 10px;
-        }
-
         .pill {
             display: flex;
             align-items: center;
@@ -382,6 +364,90 @@
 
         .pill .icon {
             font-size: 18px;
+        }
+        .dropdown-container {
+            position: relative;
+        }
+
+        .dropdown-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #2B64FF;
+            border: 1px solid #2B64FF;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-button:hover {
+            border-color: #aaa;
+        }
+
+        .dropdown-button[aria-expanded="true"] {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .dropdown-button[aria-expanded="true"] .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            margin: 5px 0 0 0;
+            padding: 0;
+            list-style: none;
+            background-color: #2B64FF;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.2s ease;
+            opacity: 0;
+            z-index: 100;
+        }
+
+        .dropdown-menu.show {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        .dropdown-menu li {
+            padding: 12px 15px;
+            color: #fff;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-menu li:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-menu li:hover,
+        .dropdown-menu li:focus {
+            background-color: #2B64FF;
+            outline: none;
+        }
+
+        .dropdown-menu li.selected {
+            background-color: #2B64FF;
+            color: #4a90e2;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -524,7 +590,16 @@
 </div>
 <div id="main">
     <div class="filter-bar">
-        <div class="dropdown">Location</div>
+        <div class="dropdown-container">
+            <button class="dropdown-button" aria-expanded="false" aria-haspopup="listbox">
+                Stanford University
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <ul class="dropdown-menu" role="listbox">
+                <li role="option" tabindex="0">Location</li>
+
+            </ul>
+        </div>
 
         <div class="pill all">All</div>
 
@@ -572,6 +647,79 @@
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script>
+    // script.js
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdownButton = document.querySelector('.dropdown-button');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        const dropdownOptions = document.querySelectorAll('.dropdown-menu li');
+
+        // Toggle dropdown visibility
+        dropdownButton.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            this.setAttribute('aria-expanded', !isExpanded);
+            dropdownMenu.classList.toggle('show');
+        });
+
+        // Handle option selection
+        dropdownOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Update button text
+                dropdownButton.textContent = this.textContent;
+                dropdownButton.insertAdjacentHTML('beforeend', '<span class="dropdown-arrow">▼</span>');
+
+                // Mark selected option
+                dropdownOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+
+                // Close dropdown
+                dropdownButton.setAttribute('aria-expanded', 'false');
+                dropdownMenu.classList.remove('show');
+
+                // You could also dispatch a custom event here
+                // document.dispatchEvent(new CustomEvent('dropdown-change', { detail: this.textContent }));
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownButton.setAttribute('aria-expanded', 'false');
+                dropdownMenu.classList.remove('show');
+            }
+        });
+
+        // Keyboard navigation
+        dropdownButton.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+
+        dropdownMenu.addEventListener('keydown', function(e) {
+            const focusedOption = document.activeElement;
+            const optionsArray = Array.from(dropdownOptions);
+            const currentIndex = optionsArray.indexOf(focusedOption);
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const nextIndex = (currentIndex + 1) % optionsArray.length;
+                optionsArray[nextIndex].focus();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prevIndex = (currentIndex - 1 + optionsArray.length) % optionsArray.length;
+                optionsArray[prevIndex].focus();
+            } else if (e.key === 'Escape') {
+                dropdownButton.setAttribute('aria-expanded', 'false');
+                dropdownMenu.classList.remove('show');
+                dropdownButton.focus();
+            } else if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                focusedOption.click();
+            }
+        });
+    });
+
     new Vue({
         el: '#app',
         mounted() {
