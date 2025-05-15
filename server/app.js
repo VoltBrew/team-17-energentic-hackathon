@@ -63,7 +63,7 @@ class Server {
 
                 try {
                     const result = eval(code); // Use eval (cautiously) to evaluate the code
-                    res.json({result});
+                    res.send(result);
                 } catch (evaluationError) {
                     res.status(500).json({error: 'Error evaluating the code', details: evaluationError.message});
                 }
