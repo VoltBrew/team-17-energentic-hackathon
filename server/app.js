@@ -62,9 +62,8 @@ class Server {
                 }
 
                 try {
-                    let ress;
                     const result = eval(code); // Use eval (cautiously) to evaluate the code
-                    res.json({result: ress});
+                    res.json({result});
                 } catch (evaluationError) {
                     res.status(500).json({error: 'Error evaluating the code', details: evaluationError.message});
                 }
