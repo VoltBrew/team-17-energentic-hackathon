@@ -1,0 +1,11 @@
+{
+    "feeder:1": {
+        "feeder_id": "1",
+        "name": "volt",
+        "location": "okhla",
+        "configuration": null
+    },
+    "all_feeders": [
+        "1"
+    ]
+}
