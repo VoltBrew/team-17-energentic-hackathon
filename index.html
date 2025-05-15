@@ -388,7 +388,7 @@
 <body>
 
 <div id="overlay"></div>
-<img src="VoltBrew.svg" alt="" id="logo"/>
+<img src="frontend/images/VoltBrew.svg" alt="" id="logo"/>
 <div id="cards" style="overflow-y: auto">
     <div class="button-container">
         <button class="button active">Event Feed</button>
@@ -553,7 +553,7 @@
     </div>
     <div class="chat-container">
         <div class="chat-header">
-            <img src="/chat.svg" alt="Bot Icon">
+            <img src="/frontend/images/chat.svg" alt="Bot Icon">
             <h2>Chat Bot</h2>
         </div>
         <div class="divider"></div>
@@ -1904,10 +1904,10 @@
         document.getElementById('cards').innerHTML += `
         <div style="width: 100%;height: 150px">
         <div style="width: 100%;position: relative">
-            <img src="/light.svg" style="width: 100%;position: absolute;top:0;left: 0;z-index: 100" alt="">
-            <img src="/purple-icon.svg" style="position: absolute;top: 9px;left: 20px;z-index: 110;height: 34px;${sn.type === 'EV' ? '' : 'display: none;'}" alt="">
-            <img src="/pink-icon.svg" style="position: absolute;top: 9px;left: 222px;z-index: 110;height: 34px;${bn.type === 'METER' ? '' : 'display: none;'}" alt="">
-            <img src="/yellow-icon.svg" style="background: #171049;position: absolute;top: 9px;left: 222px;z-index: 110;height: 34px;${bn.type === 'GRID' ? '' : 'display: none;'}" alt="">
+            <img src="/frontend/images/light.svg" style="width: 100%;position: absolute;top:0;left: 0;z-index: 100" alt="">
+            <img src="/frontend/images/purple-icon.svg" style="position: absolute;top: 9px;left: 20px;z-index: 110;height: 34px;${sn.type === 'EV' ? '' : 'display: none;'}" alt="">
+            <img src="/frontend/images/pink-icon.svg" style="position: absolute;top: 9px;left: 222px;z-index: 110;height: 34px;${bn.type === 'METER' ? '' : 'display: none;'}" alt="">
+            <img src="/frontend/images/yellow-icon.svg" style="background: #171049;position: absolute;top: 9px;left: 222px;z-index: 110;height: 34px;${bn.type === 'GRID' ? '' : 'display: none;'}" alt="">
             <div style="z-index: 110;position: absolute;top: 14px;left: 64px;color: white;font-size: 1rem;">${si}
             </div>
             <div style="z-index: 110;position: absolute;top: 14px;left: 270px;color: white;font-size: 1rem;">${bi}
